@@ -1,0 +1,154 @@
+Código Completo
+1. Instalação das Dependências
+Antes de começar, certifique-se de ter o ambiente de desenvolvimento React Native configurado. Você também precisará instalar o react-navigation para navegação entre telas e react-native-image-picker para seleção de imagens.
+
+bash
+Copiar código
+npm install @react-navigation/native @react-navigation/stack
+npm install react-native-image-picker
+2. App.js
+javascript
+Copiar código
+import React, { useState } from 'react';
+import { View, Text, TextInput, Button, FlatList, Image, StyleSheet } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import ImagePicker from 'react-native-image-picker';
+
+const Stack = createStackNavigator();
+
+// Componente para Cadastro de Fornecedores
+const RegisterSupplier = ({ navigation }) => {
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
+  const [contact, setContact] = useState('');
+  const [category, setCategory] = useState('');
+  const [imageUri, setImageUri] = useState('');
+
+  const handleImagePick = () => {
+    ImagePicker.launchImageLibrary({}, response => {
+      if (response.uri) {
+        setImageUri(response.uri);
+      }
+    });
+  };
+
+  const handleRegister = () => {
+    // Aqui você pode adicionar lógica para salvar o fornecedor
+    navigation.navigate('SupplierList', {
+      newSupplier: { name, address, contact, category, imageUri }
+    });
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Cadastro de Fornecedor</Text>
+      <TextInput
+        placeholder="Nome"
+        style={styles.input}
+        value={name}
+        onChangeText={setName}
+      />
+      <TextInput
+        placeholder="Endereço"
+        style={styles.input}
+        value={address}
+        onChangeText={setAddress}
+      />
+      <TextInput
+        placeholder="Contato"
+        style={styles.input}
+        value={contact}
+        onChangeText={setContact}
+      />
+      <TextInput
+        placeholder="Categoria"
+        style={styles.input}
+        value={category}
+        onChangeText={setCategory}
+      />
+      <Button title="Escolher Imagem" onPress={handleImagePick} />
+      {imageUri ? (
+        <Image source={{ uri: imageUri }} style={styles.image} />
+      ) : null}
+      <Button title="Registrar Fornecedor" onPress={handleRegister} />
+    </View>
+  );
+};
+
+// Componente para Listagem de Fornecedores
+const SupplierList = ({ route }) => {
+  const [suppliers, setSuppliers] = useState([]);
+
+  if (route.params?.newSupplier) {
+    setSuppliers(prevSuppliers => [...prevSuppliers, route.params.newSupplier]);
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Lista de Fornecedores</Text>
+      <FlatList
+        data={suppliers}
+        keyExtractor={(item) => item.name}
+        renderItem={({ item }) => (
+          <View style={styles.supplierItem}>
+            <Text style={styles.supplierName}>{item.name}</Text>
+            <Text>Endereço: {item.address}</Text>
+            <Text>Contato: {item.contact}</Text>
+            <Text>Categoria: {item.category}</Text>
+            {item.imageUri ? (
+              <Image source={{ uri: item.imageUri }} style={styles.image} />
+            ) : null}
+          </View>
+        )}
+      />
+    </View>
+  );
+};
+
+// Componente Principal do App
+const App = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="RegisterSupplier" component={RegisterSupplier} />
+        <Stack.Screen name="SupplierList" component={SupplierList} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 20,
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 8,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    marginVertical: 10,
+  },
+  supplierItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'gray',
+    marginBottom: 10,
+  },
+  supplierName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+});
+
+export default App;
